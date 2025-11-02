@@ -24,7 +24,7 @@ def print_game_stats(game_memory: pd.DataFrame) -> None:
     avg_game_steps = len(game_memory) / num_episodes
     max_steps_reached = game_memory["step"].values == MAX_STEPS
     print(f"Average steps / episode = {avg_game_steps}")
-    print(f"Number episode with max stpes = {np.sum(max_steps_reached)}")
+    print(f"Number episode with max steps = {np.sum(max_steps_reached)}")
 
 
 def play_frozen_lake(
@@ -156,14 +156,14 @@ if __name__ == "__main__":
             Win % = 4.57 %
             Total steps = 100990
             Average steps / episode = 10.099
-            Number episode with max stpes = 0
+            Number episode with max steps = 0
         Model traing. Model performance:
             R2 = 0.21
         Playing using the trained model:
             Win % = 56.3 %
             Total steps = 21848
             Average steps / episode = 28.613
-            Number episode with max stpes = 3
+            Number episode with max steps = 3
     """
     main(model_type=MODEL_TYPE.MLP)
     """ 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
             Win % = 4.57 %
             Total steps = 100990
             Average steps / episode = 10.099
-            Number episode with max stpes = 0
+            Number episode with max steps = 0
         Model traing. Model performance:
             Number of Epochs:
             Loss at the last epoch: 0.0172
@@ -181,7 +181,7 @@ if __name__ == "__main__":
             Win % = 56.4 %
             Total steps = 21431
             Average steps / episode = 21.431
-            Number episode with max stpes = 0
+            Number episode with max steps = 0
     """
 
 # py -m slippery_frozen_lake.rl1_gather_train_act
