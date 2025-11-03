@@ -108,7 +108,7 @@ def gen_game_model(
         case MODEL_TYPE.RNDOM_FOREST:
             game_model = RandomForestRegressor(n_estimators=100)
         case MODEL_TYPE.MLP:
-            game_model = GameNetwork(size=SIZE, epochs=1000, lr=0.01)
+            game_model = GameNetwork(size=SIZE, epochs=1000, lr=0.001)
     game_model.fit(x_train, y_train)
     y_pred = game_model.predict(x_test)
     r2 = r2_score(y_pred=y_pred, y_true=y_test)
@@ -178,9 +178,9 @@ if __name__ == "__main__":
             Loss at the last epoch: 0.0172
             R2 = 0.17
         Playing using the trained model:
-            Win % = 56.4 %
-            Total steps = 21431
-            Average steps / episode = 21.431
+            Win % = 37.8 %
+            Total steps = 17828
+            Average steps / episode = 17.828
             Number episode with max steps = 0
     """
 
