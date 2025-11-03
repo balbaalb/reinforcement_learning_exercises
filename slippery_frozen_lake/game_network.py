@@ -6,7 +6,7 @@ import pandas as pd
 
 
 class GameNetworkModel(nn.Module):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.network = nn.Sequential(
             nn.Linear(in_features=2, out_features=64),
