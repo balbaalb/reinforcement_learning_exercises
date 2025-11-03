@@ -1,9 +1,10 @@
 import numpy as np
+from typing import Self
 
 
 def get_mdp_frozen_slippery_lake(
     size: int, hole_pos: list[int], slip: float = 1.0 / 3.0
-):
+) -> dict:
     n_states = size * size
     mdp = dict()
     goal_pos = n_states - 1
@@ -30,96 +31,45 @@ def get_mdp_frozen_slippery_lake(
             for action in range(4):
                 mdp[state][action] = [(1.0, state, 0.0, True)]
         else:
-            left_state = state - 1 if c > 0 else state
-            bottom_state = state + size if r < size - 1 else state
-            right_state = state + 1 if c < size - 1 else state
-            top_state = state - size if r > 0 else state
-
-            mdp[state][go_left] = [
-                (
-                    1.0 - 2.0 * slip,
-                    left_state,
-                    get_reward(state, left_state),
-                    left_state in terminal_states,
-                ),
-                (
-                    slip,
-                    top_state,
-                    get_reward(state, top_state),
-                    top_state in terminal_states,
-                ),
-                (
-                    slip,
-                    bottom_state,
-                    get_reward(state, bottom_state),
-                    bottom_state in terminal_states,
-                ),
-            ]
-            mdp[state][go_right] = [
-                (
-                    1.0 - 2.0 * slip,
-                    right_state,
-                    get_reward(state, right_state),
-                    right_state in terminal_states,
-                ),
-                (
-                    slip,
-                    top_state,
-                    get_reward(state, top_state),
-                    top_state in terminal_states,
-                ),
-                (
-                    slip,
-                    bottom_state,
-                    get_reward(state, bottom_state),
-                    bottom_state in terminal_states,
-                ),
-            ]
-            mdp[state][go_top] = [
-                (
-                    1.0 - 2.0 * slip,
-                    top_state,
-                    get_reward(state, top_state),
-                    top_state in terminal_states,
-                ),
-                (
-                    slip,
-                    left_state,
-                    get_reward(state, left_state),
-                    left_state in terminal_states,
-                ),
-                (
-                    slip,
-                    right_state,
-                    get_reward(state, right_state),
-                    right_state in terminal_states,
-                ),
-            ]
-            mdp[state][go_bottom] = [
-                (
-                    1.0 - 2.0 * slip,
-                    bottom_state,
-                    get_reward(state, bottom_state),
-                    bottom_state in terminal_states,
-                ),
-                (
-                    slip,
-                    left_state,
-                    get_reward(state, left_state),
-                    left_state in terminal_states,
-                ),
-                (
-                    slip,
-                    right_state,
-                    get_reward(state, right_state),
-                    right_state in terminal_states,
-                ),
-            ]
+            for action in range(4):
+                mdp[state][action] = []
+                targets = [
+                    [0, -1, 0],
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                    [0, 0, 0],
+                ]  # (dr, dc, prob)
+                for i in range(4):
+                    target = targets[i]
+                    rt = r + target[0]
+                    ct = c + target[1]
+                    if rt < 0 or rt >= size or ct < 0 or ct >= size:
+                        target = targets[4]
+                    p = (
+                        (1 - 2 * slip)
+                        if (i == action)
+                        else (
+                            slip
+                            if (i == (action + 1) % 4 or i == (action + 3) % 4)
+                            else 0
+                        )
+                    )
+                    target[2] += p
+                for target in targets:
+                    p = target[2]
+                    if p > 0:
+                        rt = r + target[0]
+                        ct = c + target[1]
+                        n = rt * size + ct
+                        reward = get_reward(state, n)
+                        is_terminal = n in terminal_states
+                        mdp[state][action].append((p, n, reward, is_terminal))
     return mdp
 
 
 class SlipperyFrozenLake:
-    def __init__(self, size: int, hole_pos: list[int], slip: float = 1.0 / 3.0):
+    def __init__(self, size: int, hole_pos: list[int], slip: float = 1.0 / 3.0) -> None:
         self.size = size
         self.hole_pose = hole_pos
         self.slip = slip
@@ -127,12 +77,12 @@ class SlipperyFrozenLake:
         self.start_pos = 0
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         self.state = 0
         self.reward = 0
         self.done = False
 
-    def step(self, action: int):
+    def step(self, action: int) -> Self:
         if not self.done:
             outcomes = self.mdp[self.state][action]
             probs = []
@@ -149,13 +99,4 @@ class SlipperyFrozenLake:
             self.done = outcome[3]
         else:
             self.reward = 0
-
-
-if __name__ == "__main__":
-    size = 3
-    hole_pos = [4]
-    slip = 0.2  # if action = go-right, there is slip probability that the players go up or down instead!
-    mdp = get_mdp_frozen_slippery_lake(size=size, hole_pos=hole_pos, slip=slip)
-    for state in mdp:
-        for action in range(4):
-            print(f"mdp[{state}][{action}] = {mdp[state][action]}")
+        return self
