@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
+import matplotlib.pylab as plt
 
 
 class GameNetworkModel(nn.Module):
@@ -42,14 +42,21 @@ class GameNetwork:
     def fit(self, x: npt.ArrayLike, y: npt.ArrayLike) -> None:
         xt = self.scale_torchize_x(x)
         yt = torch.FloatTensor(y).reshape(-1, 1)
+        losses = []
         for epoch in range(self.epochs):
             self.optimizer.zero_grad()
             y_pred = self.model(xt)
             loss = self.criterion(y_pred, yt)
             loss.backward()
             self.optimizer.step()
+            losses.append(loss.item())
             if (epoch + 1) % (self.epochs // 100) == 0:
                 print(f"Epoch: {epoch + 1}, loss: {loss.item()}")
+        plt.plot(losses)
+        plt.yscale("log")
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.show()
 
     def predict(self, x: npt.ArrayLike) -> npt.ArrayLike:
         xt = self.scale_torchize_x(x)
