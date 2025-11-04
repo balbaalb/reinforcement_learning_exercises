@@ -149,7 +149,7 @@ def main(model_type: MODEL_TYPE) -> None:
 
 
 if __name__ == "__main__":
-    # main(model_type=MODEL_TYPE.RNDOM_FOREST)
+    main(model_type=MODEL_TYPE.RNDOM_FOREST)
     """
     Using randon forest as a model of the game:
         Playing randomly:
