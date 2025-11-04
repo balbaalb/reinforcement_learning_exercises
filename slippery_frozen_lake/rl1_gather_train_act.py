@@ -8,6 +8,14 @@ from enum import Enum, auto
 from slippery_frozen_lake.mdp_slippery_frozen_lake import *
 from slippery_frozen_lake.game_network import *
 
+"""
+This is a very simple reinforcement learning consisting of three steps:
+1. Run the game 10,000 times with actions taken at random and collect data
+2. Map the (stat, action) to final reward of the game by using random forest or multi-layer perceptrons
+3. Act greedily by choosing the action that the model predicts will yield the highest reward. 
+"""
+
+
 MAX_STEPS = 100
 SIZE = 4
 
@@ -183,5 +191,6 @@ if __name__ == "__main__":
             Average steps / episode = 21.344
             Number episode with max steps = 0
     """
+    pass
 
 # py -m slippery_frozen_lake.rl1_gather_train_act
