@@ -26,6 +26,10 @@ class MODEL_TYPE(Enum):
 
 
 def print_game_stats(game_memory: pd.DataFrame) -> None:
+    """
+    Give a summary of the played game data, such as number of episodes, win%,
+    average moves per episode and etc.
+    """
     num_episodes = game_memory["episode"].values[-1] + 1
     print(f"Win % = {np.sum(game_memory['reward'].values) / num_episodes * 100} %")
     print(f"Total steps = {len(game_memory)}")
@@ -41,8 +45,19 @@ def play_frozen_lake(
     explore_ratio: float = 0.0,
     train_while_playing: bool = False,
     min_episodes_before_training: int = 100,
-    partial_training: bool = True,
 ) -> pd.DataFrame:
+    """
+    Play the slippery frozen lake.
+    Inputs:
+    - num_episodes: Number of episodes ro play the game
+    - game_model: If the game model is provided it will use it in a
+        greedy fashion to select a move with max predicted rewward; otherwise, it will choose actions randomly.
+    - train_while_playing: Train the model while playing
+    - min_episodes_before_training: if train_while_playing is true, number of episodes to play the game randomly before
+        feeding the history to the model for training
+    Output:
+    - History of the game plays in the form of pandas DataFrame
+    """
     slip = 1.0 / 3.0
     hole_pos = [5, 11]
     game = SlipperyFrozenLake(size=SIZE, hole_pos=hole_pos, slip=slip)
@@ -92,11 +107,7 @@ def play_frozen_lake(
         game_memory = pd.concat([game_memory, episode_memory], ignore_index=True)
         train_model = train_while_playing and episode > min_episodes_before_training
         if train_model:
-            training_data = (
-                game_memory
-                if first_training or not partial_training
-                else episode_memory
-            )
+            training_data = game_memory if first_training else episode_memory
             x = training_data[["state", "action"]].values
             y = training_data["discounted_reward"].values
             first_training = False
@@ -107,6 +118,9 @@ def play_frozen_lake(
 def gen_game_model(
     game_memory: pd.DataFrame, model_type: MODEL_TYPE = MODEL_TYPE.RNDOM_FOREST
 ) -> RandomForestRegressor | GameNetwork:
+    """
+    Train a game model using either random forest or multi-layer perceptron
+    """
     x = game_memory[["state", "action"]].values
     y = game_memory["discounted_reward"].values
     x_train, x_test, y_train, y_test = train_test_split(
@@ -125,6 +139,9 @@ def gen_game_model(
 
 
 def gen_model_table(game_model: RandomForestRegressor) -> pd.DataFrame:
+    """
+    Creates a summary of the game model, what is the greedy predicted action for each state-action pair?
+    """
     df = pd.DataFrame(columns=["state", "policy_action"])
     for state in range(SIZE * SIZE):
         x = np.zeros([4, 2])
@@ -137,6 +154,11 @@ def gen_model_table(game_model: RandomForestRegressor) -> pd.DataFrame:
 
 
 def main(model_type: MODEL_TYPE) -> None:
+    """
+    For a given model type, play the fame and collect data, train a model using the collected data
+    and finally play the game by using predictions of the model and taking the action that is
+    predicted to maximise the rewrard (winning probablity).
+    """
     np.random.seed(42)
     this_dir = Path(__file__).parent.resolve()
     # ------- Gather Data ---------------------------------------

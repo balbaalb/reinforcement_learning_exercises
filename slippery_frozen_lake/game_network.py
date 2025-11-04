@@ -5,8 +5,16 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pylab as plt
 
+"""
+Using a pytorch a game model is built. 
+"""
+
 
 class GameNetworkModel(nn.Module):
+    """
+    A simple 3-layer fully feed formward neural network (MLP)
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.network = nn.Sequential(
@@ -24,6 +32,10 @@ class GameNetworkModel(nn.Module):
 
 
 class GameNetwork:
+    """
+    Functionalities for fitting (training) the GameNetworkModel object and then making predictions with it.
+    """
+
     def __init__(self, size: int, epochs: int, lr: int):
         torch.manual_seed(42)
         self.size = size

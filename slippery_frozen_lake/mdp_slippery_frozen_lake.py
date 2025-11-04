@@ -1,10 +1,31 @@
 import numpy as np
 from typing import Self
 
+"""
+The best way to generate the slippery frozen lake game is to use openAI's gym which is now FF's gymnasium. 
+But just to get a feel of the mdp, the game is built here. Another advantage is that now we don't have to worry 
+about who owns gym/gymnasium and whether its name and output structure of the functions has changed again!
+"""
+
 
 def get_mdp_frozen_slippery_lake(
     size: int, hole_pos: list[int], slip: float = 1.0 / 3.0
 ) -> dict:
+    """
+    Creates Markov decision process for slippery frozen lake.
+    Inputs:
+    - size: side size of the game board which is square
+    - hole_pose: a list of location indices of the holes.
+    - slip: The probablity of slipping in perpendicular direction of the intended move.
+    Output:
+    - mdp of the game in the form of: mdp[state][action] = list[(probablity, next_state, reward, is_done)]
+    Example:
+    mdp = get_mdp_frozen_slippery_lake(size=3, hole_pos=[4], slip=0.2) generates a game in the form
+    of a 3x3 square with the central cell being a hole. Each move has 0.2 probablity of being diverted in a
+    perpendicular direction. For example, a move to left means 60% chance of going to the left cell,
+    20% chance of going to the bottom cell and 20% chance of going to the top cell.
+    see test file test/test_mdp_slippery_frozen_lake.py for details of the example.
+    """
     n_states = size * size
     mdp = dict()
     goal_pos = n_states - 1
@@ -69,6 +90,10 @@ def get_mdp_frozen_slippery_lake(
 
 
 class SlipperyFrozenLake:
+    """
+    A class encapsulating the game mdp mimicing gym/gymnasium methods.
+    """
+
     def __init__(self, size: int, hole_pos: list[int], slip: float = 1.0 / 3.0) -> None:
         self.size = size
         self.hole_pose = hole_pos
