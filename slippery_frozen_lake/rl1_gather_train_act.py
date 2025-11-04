@@ -178,9 +178,9 @@ if __name__ == "__main__":
             Loss at the last epoch: 0.0172
             R2 = 0.17
         Playing using the trained model:
-            Win % = 37.8 %
-            Total steps = 17828
-            Average steps / episode = 17.828
+            Win % = 58.9 %
+            Total steps = 21344
+            Average steps / episode = 21.344
             Number episode with max steps = 0
     """
 

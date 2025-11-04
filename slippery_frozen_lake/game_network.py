@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset, random_split
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pylab as plt
@@ -40,22 +41,48 @@ class GameNetwork:
         return xt
 
     def fit(self, x: npt.ArrayLike, y: npt.ArrayLike) -> None:
+        train_size = int(len(x) * 0.8)
+        val_size = len(x) - train_size
         xt = self.scale_torchize_x(x)
         yt = torch.FloatTensor(y).reshape(-1, 1)
-        losses = []
+        dataset = TensorDataset(xt, yt)
+        dataset_train, dataset_val = random_split(
+            dataset=dataset, lengths=[train_size, val_size]
+        )
+        dataloader_train = DataLoader(
+            dataset=dataset_train, batch_size=100, shuffle=True
+        )
+        dataloader_val = DataLoader(dataset=dataset_val, batch_size=100, shuffle=True)
+        losses_train = []
+        losses_val = []
         for epoch in range(self.epochs):
-            self.optimizer.zero_grad()
-            y_pred = self.model(xt)
-            loss = self.criterion(y_pred, yt)
-            loss.backward()
-            self.optimizer.step()
-            losses.append(loss.item())
+            epoch_loss = 0
+            for x_batch, y_batch in dataloader_train:
+                self.optimizer.zero_grad()
+                y_pred = self.model(x_batch)
+                loss = self.criterion(y_pred, y_batch)
+                loss.backward()
+                self.optimizer.step()
+                epoch_loss += loss.item()
+            losses_train.append(epoch_loss / len(dataloader_train))
+            epoch_val_loss = 0
+            with torch.no_grad():
+                for x_batch, y_batch in dataloader_val:
+                    y_pred = self.model(x_batch)
+                    loss = self.criterion(y_pred, y_batch)
+                    epoch_val_loss += loss.item()
+            losses_val.append(epoch_val_loss / len(dataloader_val))
             if (epoch + 1) % (self.epochs // 100) == 0:
-                print(f"Epoch: {epoch + 1}, loss: {loss.item()}")
-        plt.plot(losses)
+                print(
+                    f"Epoch: {epoch + 1}, loss_training: {losses_train[-1]}, loss_val = {losses_val[-1]}"
+                )
+        plt.plot(losses_train, label="Training Loss")
+        plt.plot(losses_val, label="Validation Loss")
         plt.yscale("log")
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
+        plt.legend()
+        plt.tight_layout()
         plt.show()
 
     def predict(self, x: npt.ArrayLike) -> npt.ArrayLike:
