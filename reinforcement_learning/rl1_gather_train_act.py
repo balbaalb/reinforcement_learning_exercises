@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 from enum import Enum, auto
-from slippery_frozen_lake.mdp_slippery_frozen_lake import *
-from slippery_frozen_lake.game_network import *
+from environments.mdp_slippery_frozen_lake import *
+from models.game_network import *
 
 """
 This is a very simple reinforcement learning consisting of three steps, very simialr to Monte Carlo method:
@@ -215,4 +215,4 @@ if __name__ == "__main__":
     """
     pass
 
-# py -m slippery_frozen_lake.rl1_gather_train_act
+# py -m reinforcement_learning.rl1_gather_train_act

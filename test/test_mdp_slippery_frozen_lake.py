@@ -1,4 +1,4 @@
-from slippery_frozen_lake.mdp_slippery_frozen_lake import *
+from environments.mdp_slippery_frozen_lake import *
 
 
 def test_get_mdp_frozen_slippery_lake():
