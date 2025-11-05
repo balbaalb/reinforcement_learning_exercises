@@ -9,7 +9,7 @@ from slippery_frozen_lake.mdp_slippery_frozen_lake import *
 from slippery_frozen_lake.game_network import *
 
 """
-This is a very simple reinforcement learning consisting of three steps:
+This is a very simple reinforcement learning consisting of three steps, very simialr to Monte Carlo method:
 1. Run the game 10,000 times with actions taken at random and collect data
 2. Map the (stat, action) to final reward of the game by using random forest or multi-layer perceptrons
 3. Act greedily by choosing the action that the model predicts will yield the highest reward. 
@@ -190,7 +190,7 @@ if __name__ == "__main__":
         Model traing. Model performance:
             R2 = 0.21
         Playing using the trained model:
-            Win % = 56.3 %
+            Win % = 39.5 %
             Total steps = 21848
             Average steps / episode = 28.613
             Number episode with max steps = 3
