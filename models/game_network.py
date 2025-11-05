@@ -6,7 +6,7 @@ import numpy.typing as npt
 import matplotlib.pylab as plt
 
 """
-Using a pytorch a game model is built. 
+Using pytorch, a game model is built. 
 """
 
 
