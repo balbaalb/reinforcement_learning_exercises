@@ -6,10 +6,22 @@ from environments.mdp_slippery_frozen_lake import (
 )
 from models.bellman_eq_methods import policy_iteration
 
+""" 
+Here, the game of frozen slippery lake is played using policy iteration, an iteration of which 
+includes policy evaluation followed by policy improvement. The resulting policy wins the 
+game 99.4% of episodes out of 1000 episodes. However, this high percentage of winning comes
+from the knowing the full picture of the game which is not case in most applications
+of the reinforcement learning. 
 
-def get_action(policy: Callable[[int, int], float], state: int):
-    q = np.array([policy(state, a) for a in range(4)])
-    return np.argmax(q)
+Policy iteration is part of dynamic programing in reinforcement learning and the methods are
+directly derived from the Bellman equation. 
+
+Note that a more efficient version of policy iteration is value iteration that combines 
+policy evaluation and policy improvement in a single iteration. That is not developed here
+as I will not use the dynamic programming methods in next steps. 
+
+See  Sutton & Barto 2015 Reinforcement Learning: An Introduction, for more details.
+"""
 
 
 def main():

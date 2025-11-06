@@ -12,9 +12,9 @@ def policy_evaluation(
 ) -> npt.ArrayLike:
     """
     Produces the state value array from
-    - mdp: environment MDP
+    - mdp: Known Markov decision process (mdp) of the environment
     - policy: Action probability in each state: π(state, action)
-    - gamma: discount factor, 0 < gamma < 1
+    - gamma: the discount factor for rewards in the next step, 0 < gamma < 1
     """
     if gamma <= 0 or gamma >= 1:
         raise Exception("Discount factor gamma must be between 0 to 1.")
@@ -40,7 +40,19 @@ def policy_evaluation(
     return v
 
 
-def policy_improvement(v: npt.ArrayLike, mdp: dict, gamma: float = 0.9):
+def policy_improvement(
+    v: npt.ArrayLike, mdp: dict, gamma: float = 0.9
+) -> Callable[[int, int], float]:
+    """
+    Generates a greedy policy that based on maximum value
+    of state-action pair.
+    Inputs:
+    - v: numpy array of state values
+    - mdp: Known Markov decision process (mdp) of the environment
+    - gamma: the discount factor for rewards in the next step, 0 < gamma < 1
+    Output:
+    - Improved policy, π*(state, action)
+    """
     n_states = len(mdp)
     optimal_actions = np.zeros(n_states)
     for s in range(n_states):
@@ -58,6 +70,17 @@ def policy_improvement(v: npt.ArrayLike, mdp: dict, gamma: float = 0.9):
 def policy_iteration(
     mdp: dict, starting_policy: Callable[[int, int], float], gamma: float = 0.9
 ) -> tuple[npt.ArrayLike, Callable[[int, int], float]]:
+    """
+    Combines policy evaluation and policy improvement iteratively to produce
+    an optimal policy.
+    Inputs:
+    - mdp: Known Markov decision process (mdp) of the environment
+    - starting_policy: Initial action probability in each state: π0(state, action)
+    - gamma: the discount factor for rewards in the next step, 0 < gamma < 1
+    Output:
+    - v: Final state-values in numpy array format
+    - π*(state, action): Final optimal policy
+    """
     convergence_reached = False
     convergence_tolerance = 1.0e-10
     iter = 0
