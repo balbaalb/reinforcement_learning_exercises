@@ -59,4 +59,14 @@ def test_policy_iteration():
             assert optimal_policy(s, a) == (1 if a == optimal_moves[i] else 0)
 
 
+def test_value_iteration():
+    mdp = get_mdp_frozen_slippery_lake(size=4, hole_pos=[5, 7, 11, 12], slip=1.0 / 3.0)
+    _, optimal_policy, _ = value_iteration(mdp=mdp, gamma=0.99)
+    states_with_optimal_move = [0, 1, 2, 3, 4, 8, 9, 10, 13, 14]
+    optimal_moves = [0, 3, 3, 3, 0, 3, 1, 0, 2, 1]
+    for i, s in enumerate(states_with_optimal_move):
+        for a in range(4):
+            assert optimal_policy(s, a) == (1 if a == optimal_moves[i] else 0)
+
+
 # py -m test.test_bellman_eq_methods
