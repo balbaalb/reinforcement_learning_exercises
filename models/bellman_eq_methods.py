@@ -93,3 +93,45 @@ def policy_iteration(
         iter += 1
         v_prev = v_new.copy()
     return v_new, improved_policy
+
+
+def value_iteration(
+    mdp: dict, gamma: float = 0.9, verbose:bool = False
+) -> tuple[npt.ArrayLike, Callable[[int, int], float]]:
+    """
+    Combines policy evaluation and policy improvement iterations used in policy improvement
+    into a combined iteration.
+    Inputs:
+    - mdp: Known Markov decision process (mdp) of the environment
+    - gamma: the discount factor for rewards in the next step, 0 < gamma < 1
+    Output:
+    - v: Final state-values in numpy array format
+    - π*(state, action): Final optimal policy
+    """
+    n_states = len(mdp)
+    v = np.zeros(n_states)
+    v_prev = np.zeros_like(v)
+    convergence_reached = False
+    convergence_tolerance = 1.0e-10
+    iter = 0
+    max_iter = 1000
+    optimal_actions = np.zeros(n_states)
+    while not convergence_reached and iter < max_iter:
+        for s in range(n_states):
+            n_actions = len(mdp[s])
+            v_new = np.zeros(n_actions)
+            for a in range(n_actions):
+                for prob, s_next, reward, _ in mdp[s][a]:
+                    v_new[a] += prob * (reward + gamma * v[s_next])
+            a_optimum = np.argmax(v_new)
+            v[s] = v_new[a_optimum]
+            optimal_actions[s] = a_optimum
+        convergence_reached = np.max(np.abs(v - v_prev)) < convergence_tolerance
+        iter += 1
+        if verbose and iter % 10 == 0:
+            print(f"iter = {iter}, err = {np.max(np.abs(v - v_prev))}")
+        v_prev = v.copy()
+    if iter == max_iter:
+        print(f"max iter reached!!!")
+    optimal_policy = lambda s, a: 1.0 if a == optimal_actions[s] else 0.0
+    return v, optimal_policy, optimal_actions
