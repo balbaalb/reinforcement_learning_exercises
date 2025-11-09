@@ -6,7 +6,7 @@ def test_run_policy():
     actions = np.zeros(3)
     np.random.seed(42)
     for _ in range(1000):
-        a = run_policy(pi=pi, state=0, n_actions=3)
+        a = run_policy(policy=pi, state=0, n_actions=3)
         actions[a] += 1
     print(f"actions = {actions}")
     assert 90 <= actions[0] <= 110
@@ -23,7 +23,7 @@ def test_run_policy2():
     actions = np.zeros(3)
     np.random.seed(123)
     for s in range(1000):
-        a = run_policy(pi=pi, state=s % 2, n_actions=3)
+        a = run_policy(policy=pi, state=s % 2, n_actions=3)
         actions[a] += 1
     print(f"actions = {actions}")
     assert 365 <= actions[0] <= 385
