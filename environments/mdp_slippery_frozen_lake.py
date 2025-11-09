@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Self
+from environments.environment import Environment
 
 """
 The best way to generate the slippery frozen lake game is to use openAI's gym which is now FF's gymnasium. 
@@ -89,7 +90,7 @@ def get_mdp_frozen_slippery_lake(
     return mdp
 
 
-class SlipperyFrozenLake:
+class SlipperyFrozenLake(Environment):
     """
     A class encapsulating the game mdp mimicing gym/gymnasium methods.
     """

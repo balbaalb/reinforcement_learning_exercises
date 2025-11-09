@@ -4,6 +4,7 @@ from scipy.stats import poisson
 from pathlib import Path
 import time
 from typing import Self
+from environments.environment import Environment
 
 """
 Jack's Car Rental Problem. 
@@ -123,7 +124,7 @@ def get_mdp_jack_car_rental():
     return mdp
 
 
-class JackCarRentalProblem:
+class JackCarRentalProblem(Environment):
     """
     A class encapsulating the game mdp mimicing gym/gymnasium methods.
     """
