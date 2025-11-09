@@ -101,12 +101,14 @@ class SlipperyFrozenLake(Environment):
         self.slip = slip
         self.mdp = get_mdp_frozen_slippery_lake(size=size, hole_pos=hole_pos, slip=slip)
         self.start_pos = 0
+        self.n_states = size**2
+        self.n_actions = 4
+        self.max_steps = 1000
         self.reset()
 
     def reset(self) -> None:
+        super().reset()
         self.state = 0
-        self.reward = 0
-        self.done = False
 
     def step(self, action: int) -> Self:
         if not self.done:
