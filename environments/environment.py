@@ -6,7 +6,7 @@ class Environment(ABC):
     def __init__(self):
         super().__init__()
         self.n_states = 0
-        self.n_action = 0
+        self.n_actions = 0
         self.reset()
 
     def reset(self) -> None:
