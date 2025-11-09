@@ -4,12 +4,13 @@ from environments.environment import *
 class SampleEnviro(Environment):
     def __init__(self):
         super().__init__()
+        self.max_steps = 1000
 
     def step(self, action: int) -> Self:
-        if not self.done:
+        if not self.done and self.step_number < self.max_steps:
             self.reward += 1 if action == 1 else 0
-            self.episode_number += 1
-            self.done = self.episode_number >= 10
+            self.step_number += 1
+            self.done = self.step_number >= 10
         return self
 
 
