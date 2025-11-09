@@ -1,7 +1,10 @@
 from environments.environment import *
 
 
-class TestEnviro(Environment):
+class SampleEnviro(Environment):
+    def __init__(self):
+        super().__init__()
+
     def step(self, action: int) -> Self:
         if not self.done:
             self.reward += 1 if action == 1 else 0
@@ -19,7 +22,7 @@ def TestModel(env: Environment) -> None:
 
 
 def test_environment():
-    env = TestEnviro()
+    env = SampleEnviro()
     env.reward = 1000
     TestModel(env=env)
     assert env.reward == 5
