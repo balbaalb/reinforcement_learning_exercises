@@ -19,5 +19,5 @@ class Environment(ABC):
         self.state = np.random.randint(self.n_states)
 
     @abstractmethod
-    def step(self) -> Self:
+    def step(self, action: int) -> Self:
         pass
