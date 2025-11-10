@@ -5,6 +5,14 @@ class SampleEnviro(Environment):
     def __init__(self):
         super().__init__()
         self.max_steps = 1000
+        self.n_states = 1
+        self.n_actions = 2
+        self.reset()
+
+    def reset(self):
+        self.reward = 0
+        self.done = False
+        self.step_number = 0
 
     def step(self, action: int) -> Self:
         if not self.done and self.step_number < self.max_steps:

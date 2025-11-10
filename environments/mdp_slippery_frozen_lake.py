@@ -107,10 +107,13 @@ class SlipperyFrozenLake(Environment):
         self.reset()
 
     def reset(self) -> None:
-        super().reset()
         self.state = 0
+        self.reward = 0
+        self.done = False
+        self.step_number = 0
 
     def step(self, action: int) -> Self:
+        self.step_number += 1
         if not self.done:
             outcomes = self.mdp[self.state][action]
             probs = []
