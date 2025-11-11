@@ -3,7 +3,17 @@ import numpy as np
 from environments.environment import Environment
 from environments.run_policy import run_policy, PolicyType
 
-##  🚧🚧🚧🚧🚧🚧🚧🚧  In Progress 🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧
+
+def play_env(env: Environment, n_episodes: int, policy: PolicyType):
+    total_rewards = 0
+    for _ in range(n_episodes):
+        env.reset()
+        while not env.done and env.step_number < env.max_steps:
+            a = run_policy(policy, state=env.state, n_actions=env.n_actions)
+            env.step(a)
+            total_rewards += env.reward
+    win_percent = total_rewards / n_episodes * 100
+    return win_percent
 
 
 def gen_trajectory(env: Environment, policy: PolicyType, gamma: float = 0):
@@ -39,9 +49,11 @@ def monte_carlo_control_1v_on(
     n_q = np.zeros([env.n_states, env.n_actions], dtype=int)
     a_optimum = np.zeros(env.n_states)
     epsilon = epsilon_start
+    win_ratios = []
     for episode in range(n_episodes):
         if verbose_frequency is not None and (episode + 1) % verbose_frequency == 0:
-            print(f"Episode {episode + 1}")
+            win_ratios.append(play_env(env=env, n_episodes=1000, policy=policy))
+            print(f"Episode {episode + 1}: win ratio= {round(win_ratios[-1], 2)} %")
         trajectory = gen_trajectory(env=env, policy=policy, gamma=gamma)
         for s in range(env.n_states):
             for a in range(env.n_actions):
@@ -57,4 +69,4 @@ def monte_carlo_control_1v_on(
         policy = lambda s, a: epsilon / env.n_actions + (
             (1.0 - epsilon) if a == a_optimum[s] else 0
         )
-    return policy
+    return policy, win_ratios

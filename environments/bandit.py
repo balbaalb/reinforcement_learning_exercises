@@ -66,6 +66,4 @@ class Bandit:
         return self
 
 
-mdp = get_mdp_bandit(n_states=5, slip=0.4)
-print(f"mdp = \n{mdp}")
 # py -m  environments.bandit
