@@ -1,6 +1,5 @@
 from models.monte_carlo_methods import *
 from environments.mdp_slippery_frozen_lake import SlipperyFrozenLake
-from environments.bandit import Bandit
 import matplotlib.pyplot as plt
 
 """

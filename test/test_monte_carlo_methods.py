@@ -1,12 +1,12 @@
 from models.monte_carlo_methods import *
 from environments.mdp_slippery_frozen_lake import SlipperyFrozenLake
-from environments.bandit import Bandit
+from environments.mdp_random_walk import RandomWalk
 from environments.run_policy import run_policy
 
 
 def test_monte_carlo_control_1v_on():
     np.random.seed(123)
-    env = Bandit(n_states=5, start_state=2, slip=0.4)
+    env = RandomWalk(n_states=5, start_state=2, slip=0.4)
     optimal_policy, _ = monte_carlo_control_1v_on(
         env=env,
         n_episodes=100,
@@ -17,7 +17,7 @@ def test_monte_carlo_control_1v_on():
     for s in range(1, env.n_states - 1):  # states_with_optimal_move:
         assert optimal_policy(s, 0) < optimal_policy(s, 1)
 
-    env = Bandit(n_states=5, start_state=2, slip=0.6)
+    env = RandomWalk(n_states=5, start_state=2, slip=0.6)
     optimal_policy, _ = monte_carlo_control_1v_on(
         env=env,
         n_episodes=100,

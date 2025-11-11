@@ -2,7 +2,12 @@ import numpy as np
 from typing import Self
 from environments.environment import Environment
 
-##  🚧🚧🚧🚧🚧🚧🚧🚧  In Progress 🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧
+"""
+Creating mdp and environment for the random walk problem.
+The hole is always the left most state and the goal is always 
+the most right state. The starting position can be specified at
+initialization time.
+"""
 
 
 def get_mdp_bandit(n_states: int = 5, slip: float = 0.4):
@@ -39,7 +44,7 @@ def get_mdp_bandit(n_states: int = 5, slip: float = 0.4):
     return mdp
 
 
-class Bandit:
+class RandomWalk(Environment):
     def __init__(self, n_states: int = 5, start_state: int = 2, slip: float = 0.4):
         self.n_states = n_states
         self.n_actions = 2
@@ -66,4 +71,4 @@ class Bandit:
         return self
 
 
-# py -m  environments.bandit
+# py -m  environments.mdp_random_walk
