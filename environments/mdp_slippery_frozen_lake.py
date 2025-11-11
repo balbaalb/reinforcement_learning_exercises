@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Self
+from environments.environment import Environment
 
 """
 The best way to generate the slippery frozen lake game is to use openAI's gym which is now FF's gymnasium. 
@@ -89,7 +90,7 @@ def get_mdp_frozen_slippery_lake(
     return mdp
 
 
-class SlipperyFrozenLake:
+class SlipperyFrozenLake(Environment):
     """
     A class encapsulating the game mdp mimicing gym/gymnasium methods.
     """
@@ -100,14 +101,19 @@ class SlipperyFrozenLake:
         self.slip = slip
         self.mdp = get_mdp_frozen_slippery_lake(size=size, hole_pos=hole_pos, slip=slip)
         self.start_pos = 0
+        self.n_states = size**2
+        self.n_actions = 4
+        self.max_steps = 1000
         self.reset()
 
     def reset(self) -> None:
         self.state = 0
         self.reward = 0
         self.done = False
+        self.step_number = 0
 
     def step(self, action: int) -> Self:
+        self.step_number += 1
         if not self.done:
             outcomes = self.mdp[self.state][action]
             probs = []
