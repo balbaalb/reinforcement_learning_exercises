@@ -19,7 +19,6 @@ def td_control(
     """
     policy = lambda s, a: 1.0 / env.n_actions
     q = np.zeros([env.n_states, env.n_actions], dtype=float)
-    # n_q = np.zeros([env.n_states, env.n_actions], dtype=int)
     a_optimum = np.zeros(env.n_states, dtype=int)
     epsilon = epsilon_start
     alpha = alpha_start
@@ -39,8 +38,6 @@ def td_control(
                 a1 = run_policy(policy=policy, state=s1, n_actions=env.n_actions)
             else:  # Q-learning
                 a1 = a_optimum[s1]  # if a1 comes from policy this becomes sars
-            # n_q[s0, a0] += 1
-            # alpha = 1.0 / n_q[s0, a0]
             g = r + gamma * q[s1, a1]
             diff = g - q[s0, a0]
             q[s0, a0] += alpha * diff
