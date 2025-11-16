@@ -1,6 +1,7 @@
 from models.monte_carlo_methods import *
 from environments.mdp_slippery_frozen_lake import SlipperyFrozenLake
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 """
 Here the 1st-visit on-policy Monte Carlo method is used to improve win % for slippery frozen lake.
@@ -26,10 +27,12 @@ def main() -> None:
 
     for s in range(env.n_states):  # states_with_optimal_move:
         print(f"pi({s}) = {[optimal_policy(s , a) for a in range(4)]}")
+    this_dir = Path(__file__).parent.resolve()
     plt.plot(win_ratios)
     plt.xlabel("Episode")
     plt.ylabel("Total Win %")
     plt.title("First-visit on-policy Monte Carlo control\nfor slippery frozen lake")
+    plt.savefig(this_dir / "images/Slippery-frozen-lake-1v-on-policy-MonteCarlo")
     plt.show()
 
 
