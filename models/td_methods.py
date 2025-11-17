@@ -15,7 +15,7 @@ def td_control(
     on_policy: bool = False,
 ) -> PolicyType:
     """
-    On-policy control method that uses TD-learning
+    Control method that uses one step TD-learning. Inputs:
     """
     policy = lambda s, a: 1.0 / env.n_actions
     q = np.zeros([env.n_states, env.n_actions], dtype=float)
