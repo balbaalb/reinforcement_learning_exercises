@@ -1,7 +1,5 @@
 from models.monte_carlo_methods import *
-from environments.mdp_slippery_frozen_lake import SlipperyFrozenLake
 from environments.mdp_random_walk import RandomWalk
-from environments.run_policy import run_policy
 
 
 def test_monte_carlo_control_1v_on():
@@ -27,7 +25,3 @@ def test_monte_carlo_control_1v_on():
     )
     for s in range(1, env.n_states - 1):  # states_with_optimal_move:
         assert optimal_policy(s, 0) > optimal_policy(s, 1)
-
-
-test_monte_carlo_control_1v_on()
-# py -m test.test_monte_carlo_methods
