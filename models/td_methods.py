@@ -40,7 +40,7 @@ def td_control(
             if on_policy:  # SARSA
                 a1 = run_policy(policy=policy, state=s1, n_actions=env.n_actions)
             else:  # Q-learning
-                a1 = a_optimum[s1]  # if a1 comes from policy this becomes sars
+                a1 = a_optimum[s1]
                 if lambda_td > 1.0e-10:
                     ap = run_policy(policy=policy, state=s1, n_actions=env.n_actions)
             g = r + gamma * q[s1, a1]
