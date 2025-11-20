@@ -52,7 +52,7 @@ def td_control(
                     E[s0, a0] += 1
                     E = gamma * lambda_td * E
                 else:
-                    E = 0
+                    E = np.zeros_like(E)
             a_optimum[s0] = np.argmax(q[s0, :])
             policy = lambda s, a: epsilon / env.n_actions + (
                 (1.0 - epsilon) if a == np.argmax(q[s, :]) else 0
