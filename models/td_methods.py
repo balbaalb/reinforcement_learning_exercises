@@ -73,18 +73,19 @@ class Network(nn.Sequential):
         self.layers = []
         n_input = in_features
         for i, depth in enumerate(depths):
-            if i > 0:
-                self.add_module(name=f"Activation-{i - 1}", module=nn.ReLU())
             self.add_module(
                 name=f"Layer-{i}",
                 module=nn.Linear(in_features=n_input, out_features=depth),
             )
+            self.add_module(name=f"Activation-{i - 1}", module=nn.ReLU())
             n_input = depth
-        if len(depths) > 0:
-            self.add_module(name=f"Act-Final", module=nn.Tanh())
         self.add_module(
             name="Output",
             module=nn.Linear(in_features=n_input, out_features=out_features),
+        )
+        self.add_module(
+            name="Softmax",
+            module=nn.Softmax(dim=1),
         )
 
     def forward(self, x):
@@ -162,7 +163,7 @@ def deep_q_learning(
                     if np.random.randn() < epsilon:
                         return random_policy(s)
                     with torch.no_grad():
-                        s_torch = torch.tensor([s / 5.0])
+                        s_torch = torch.tensor([s / 5.0]).reshape(-1, 1)
                         return qs_network(s_torch).max(-1)[1].item()
 
         epsilon *= epsilon_decay
