@@ -8,11 +8,15 @@ class Environment(ABC):
         super().__init__()
         self.state = None
         self.reward = None
+        self.gain = None
         self.n_states = None
         self.n_actions = None
         self.step_number = None
         self.max_steps = None
         self.done = None
+        # for environments with continous states and actions:
+        self.n_state_features = None
+        self.n_action_features = None
 
     @abstractmethod
     def reset(self) -> None:
