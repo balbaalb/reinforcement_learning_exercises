@@ -6,6 +6,7 @@ from environments.environment import Environment
 
 PolicyType = Callable[[int, int], int]
 PolicyType_Continous = Callable[[npt.ArrayLike, int], int]
+DeterminisiticPolicyType = Callable[[float], int]
 
 
 def run_policy(
@@ -34,6 +35,20 @@ def play_env(
         env.reset()
         while not env.done and env.step_number < env.max_steps:
             a = run_policy(policy, state=env.state, n_actions=env.n_actions)
+            env.step(a)
+            total_rewards += env.reward
+    win_percent = total_rewards / n_episodes * 100
+    return win_percent
+
+
+def play_env_det_policy(
+    env: Environment, n_episodes: int, det_policy: DeterminisiticPolicyType
+):
+    total_rewards = 0
+    for _ in range(n_episodes):
+        env.reset()
+        while not env.done and env.step_number < env.max_steps:
+            a = det_policy(env.state)
             env.step(a)
             total_rewards += env.reward
     win_percent = total_rewards / n_episodes * 100
