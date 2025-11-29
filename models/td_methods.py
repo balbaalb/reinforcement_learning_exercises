@@ -3,7 +3,7 @@ import numpy.typing as npt
 import torch
 import torch.nn as nn
 from environments.environment import Environment
-from environments.run_policy import run_policy, PolicyType, play_env
+from environments.run_policy import *
 
 
 def td_control(
@@ -100,9 +100,11 @@ def deep_q_learning(
     verbose_frequency: int | None = None,
     q_network_depths: list[int] = [256, 256],
     n_epochs: int = 10,
+    batch_size=1000,
     lr: float = 0.001,
-) -> PolicyType:
-    policy = lambda s, a: 1.0 / env.n_actions
+) -> DeterminisiticPolicyType:
+    random_policy = lambda s: np.random.choice(np.arange(env.n_actions))
+    policy = random_policy
     qs_network = Network(
         in_features=env.n_state_features,
         depths=q_network_depths,
@@ -112,35 +114,56 @@ def deep_q_learning(
     criterion = nn.MSELoss()
     epsilon = epsilon_start
     win_ratios = []
+    sars_traces = []
     for episode in range(n_episodes):
         if verbose_frequency is not None and (episode + 1) % verbose_frequency == 0:
-            win_ratios.append(play_env(env=env, n_episodes=1000, policy=policy))
-            print(f"Episode {episode + 1}: win ratio= {round(win_ratios[-1], 2)} %")
+            with torch.no_grad():
+                win_ratios.append(
+                    play_env_det_policy(env=env, n_episodes=1000, det_policy=policy)
+                )
+            print(
+                f"Episode {episode + 1}: trace length: {len(sars_traces)}, "
+                + f"win ratio= {round(win_ratios[-1], 2)} %, epsilon = {epsilon}"
+            )
         env.reset()
         while not env.done and env.step_number < env.max_steps:
             s0 = env.state
-            a0 = run_policy(policy=policy, state=s0, n_actions=env.n_actions)
+            a0 = policy(s0)
             env.step(a0)
             s1 = env.state
             r = env.reward
-            s0_torch = torch.FloatTensor(np.array([s0 / 5.0]))
-            s1_torch = torch.FloatTensor(np.array([s1 / 5.0]))
-            for _ in range(n_epochs):
-                q0_torch = qs_network(s0_torch)[a0]
-                qs1_torch = qs_network(s1_torch)
-                a1 = qs1_torch.max(-1)[1]
-                q1_torch = qs1_torch[a1]
-                g = q1_torch * gamma + r
-                optimizer.zero_grad()
-                loss = criterion(g, q0_torch)
-                loss.backward()
-                optimizer.step()
+            sars_traces.append([s0, a0, r, s1])
+            if len(sars_traces) >= batch_size:
+                sars_traces = np.array(sars_traces)
+                s0_scaled = sars_traces[:, 0].reshape(-1, 1) / 5.0
+                a0 = sars_traces[:, 1].astype(int)
+                r = sars_traces[:, 2].reshape(-1, 1)
+                s1_scaled = sars_traces[:, 3].reshape(-1, 1) / 5.0
+                s0_torch = torch.FloatTensor(s0_scaled)
+                s1_torch = torch.FloatTensor(s1_scaled)
+                r_torch = torch.FloatTensor(r)
+                for epoch in range(n_epochs):
+                    qs0_torch = qs_network(s0_torch)
+                    q0_torch = qs0_torch[a0]
+                    qs1_torch = qs_network(s1_torch)
+                    a1 = qs1_torch.max(-1)[1]
+                    q1_torch = qs1_torch[a1]
+                    g = q1_torch * gamma + r_torch
+                    # print(f"shapes: {s0_torch.shape} , {qs0_torch.shape}, {a0.shape}, {q0_torch.shape}")
+                    optimizer.zero_grad()
+                    # print(f"g.shape = {g.shape}, q0.shape = {q0_torch.shape}")
+                    loss = criterion(g, q0_torch)
+                    loss.backward()
+                    optimizer.step()
+                print(f"epoch = {epoch + 1}, loss = {loss.item()}")
+                sars_traces = []
 
-            def policy(s, a):
-                s_torch = torch.FloatTensor(np.array([s / 5.0]))
-                qs_torch = qs_network(s_torch)
-                a_opt = qs_torch.max(-1)[1].item()
-                return epsilon / env.n_actions + ((1.0 - epsilon) if a == a_opt else 0)
+                def policy(s):
+                    if np.random.randn() < epsilon:
+                        return random_policy(s)
+                    with torch.no_grad():
+                        s_torch = torch.tensor([s / 5.0])
+                        return qs_network(s_torch).max(-1)[1].item()
 
         epsilon *= epsilon_decay
     return policy, win_ratios

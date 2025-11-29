@@ -10,17 +10,18 @@ def play_episodes() -> None:
     slip = 0.33
     env = RandomJumps(slip=slip)
     report_freq = 100
-    n_episodes = 10000
+    n_episodes = 100000
     _, win_ratios = deep_q_learning(
         env=env,
-        n_episodes=10000,
+        n_episodes=n_episodes,
         gamma=0.99,
         epsilon_start=1.0,
         epsilon_decay=0.999,
-        verbose_frequency=1,
+        verbose_frequency=report_freq,
         q_network_depths=[256, 256],
-        n_epochs=10,
-        lr=0.001,
+        n_epochs=100,
+        batch_size=1000,
+        lr=0.0001,
     )
 
     plt.plot(np.arange(0, n_episodes, report_freq), win_ratios)
