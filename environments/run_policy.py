@@ -1,12 +1,22 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from typing import Callable
 from environments.environment import Environment
 
 PolicyType = Callable[[int, int], int]
+PolicyType_Continous = Callable[[npt.ArrayLike, int], int]
 
 
-def run_policy(policy: PolicyType, state: int, n_actions: int) -> int:
+def run_policy(
+    policy: PolicyType | PolicyType_Continous,
+    state: int | npt.ArrayLike,
+    n_actions: int,
+) -> int:
+    """
+    Runs a deterministic or undeterministic policy.
+    State can be state index or array of state features.
+    """
     cdfs = [0]
     cdf = 0
     for action in range(n_actions - 1):
@@ -16,7 +26,9 @@ def run_policy(policy: PolicyType, state: int, n_actions: int) -> int:
     return np.searchsorted(cdfs, x) - 1
 
 
-def play_env(env: Environment, n_episodes: int, policy: PolicyType):
+def play_env(
+    env: Environment, n_episodes: int, policy: PolicyType | PolicyType_Continous
+):
     total_rewards = 0
     for _ in range(n_episodes):
         env.reset()

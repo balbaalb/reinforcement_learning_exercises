@@ -1,4 +1,7 @@
 import numpy as np
+import numpy.typing as npt
+import torch
+import torch.nn as nn
 from environments.environment import Environment
 from environments.run_policy import run_policy, PolicyType, play_env
 
@@ -58,5 +61,86 @@ def td_control(
                 (1.0 - epsilon) if a == np.argmax(q[s, :]) else 0
             )
         alpha *= alpha_decay
+        epsilon *= epsilon_decay
+    return policy, win_ratios
+
+
+class Network(nn.Sequential):
+    def __init__(
+        self, in_features: int = 1, depths: list[int] = [], out_features: int = 1
+    ) -> None:
+        super().__init__()
+        self.layers = []
+        n_input = in_features
+        for i, depth in enumerate(depths):
+            if i > 0:
+                self.add_module(name=f"Activation-{i - 1}", module=nn.ReLU())
+            self.add_module(
+                name=f"Layer-{i}",
+                module=nn.Linear(in_features=n_input, out_features=depth),
+            )
+            n_input = depth
+        if len(depths) > 0:
+            self.add_module(name=f"Act-Final", module=nn.Tanh())
+        self.add_module(
+            name="Output",
+            module=nn.Linear(in_features=n_input, out_features=out_features),
+        )
+
+    def forward(self, x):
+        return super().forward(x)
+
+
+def deep_q_learning(
+    env: Environment,
+    n_episodes: int = 1000,
+    gamma: float = 0.9,
+    epsilon_start: float = 1.0,
+    epsilon_decay: float = 0.99,
+    verbose_frequency: int | None = None,
+    q_network_depths: list[int] = [256, 256],
+    n_epochs: int = 10,
+    lr: float = 0.001,
+) -> PolicyType:
+    policy = lambda s, a: 1.0 / env.n_actions
+    qs_network = Network(
+        in_features=env.n_state_features,
+        depths=q_network_depths,
+        out_features=env.n_actions,
+    )
+    optimizer = torch.optim.Adam(params=qs_network.parameters(), lr=lr)
+    criterion = nn.MSELoss()
+    epsilon = epsilon_start
+    win_ratios = []
+    for episode in range(n_episodes):
+        if verbose_frequency is not None and (episode + 1) % verbose_frequency == 0:
+            win_ratios.append(play_env(env=env, n_episodes=1000, policy=policy))
+            print(f"Episode {episode + 1}: win ratio= {round(win_ratios[-1], 2)} %")
+        env.reset()
+        while not env.done and env.step_number < env.max_steps:
+            s0 = env.state
+            a0 = run_policy(policy=policy, state=s0, n_actions=env.n_actions)
+            env.step(a0)
+            s1 = env.state
+            r = env.reward
+            s0_torch = torch.FloatTensor(np.array([s0 / 5.0]))
+            s1_torch = torch.FloatTensor(np.array([s1 / 5.0]))
+            for _ in range(n_epochs):
+                q0_torch = qs_network(s0_torch)[a0]
+                qs1_torch = qs_network(s1_torch)
+                a1 = qs1_torch.max(-1)[1]
+                q1_torch = qs1_torch[a1]
+                g = q1_torch * gamma + r
+                optimizer.zero_grad()
+                loss = criterion(g, q0_torch)
+                loss.backward()
+                optimizer.step()
+
+            def policy(s, a):
+                s_torch = torch.FloatTensor(np.array([s / 5.0]))
+                qs_torch = qs_network(s_torch)
+                a_opt = qs_torch.max(-1)[1].item()
+                return epsilon / env.n_actions + ((1.0 - epsilon) if a == a_opt else 0)
+
         epsilon *= epsilon_decay
     return policy, win_ratios
