@@ -133,23 +133,27 @@ def deep_q_learning(
             env.step(a0)
             s1 = env.state
             r = env.reward
-            sars_traces.append([s0, a0, r, s1])
+            done = 1 if env.done else 0
+            sars_traces.append([s0, a0, r, s1, done])
             if len(sars_traces) >= batch_size:
-                sars_traces = np.array(sars_traces)
-                s0_scaled = sars_traces[:, 0].reshape(-1, 1) / 5.0
-                a0 = sars_traces[:, 1].astype(int)
-                r = sars_traces[:, 2].reshape(-1, 1)
-                s1_scaled = sars_traces[:, 3].reshape(-1, 1) / 5.0
+                np_sars_traces = np.array(sars_traces)
+                s0_scaled = np_sars_traces[:, 0].reshape(-1, 1) / 5.0
+                a0 = np_sars_traces[:, 1].astype(int)
+                r = np_sars_traces[:, 2].reshape(-1, 1)
+                s1_scaled = np_sars_traces[:, 3].reshape(-1, 1) / 5.0
+                d_coeff = (np_sars_traces[:, 4] - 1.0).reshape(-1, 1)
+
                 s0_torch = torch.FloatTensor(s0_scaled)
                 s1_torch = torch.FloatTensor(s1_scaled)
                 r_torch = torch.FloatTensor(r)
+                d_coeff_torch = torch.FloatTensor(d_coeff)
                 for epoch in range(n_epochs):
                     qs0_torch = qs_network(s0_torch)
                     q0_torch = qs0_torch[a0]
                     qs1_torch = qs_network(s1_torch)
                     a1 = qs1_torch.max(-1)[1]
                     q1_torch = qs1_torch[a1]
-                    g = q1_torch * gamma + r_torch
+                    g = q1_torch * d_coeff_torch * gamma + r_torch
                     # print(f"shapes: {s0_torch.shape} , {qs0_torch.shape}, {a0.shape}, {q0_torch.shape}")
                     optimizer.zero_grad()
                     # print(f"g.shape = {g.shape}, q0.shape = {q0_torch.shape}")
