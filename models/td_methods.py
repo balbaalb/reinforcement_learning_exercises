@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from environments.environment import Environment
 from environments.run_policy import *
+import copy
 
 
 def td_control(
@@ -106,12 +107,16 @@ def deep_q_learning(
     lr: float = 0.001,
 ) -> DeterminisiticPolicyType:
     random_policy = lambda s: np.random.choice(np.arange(env.n_actions))
+    current_policy_wins = play_env_det_policy(
+        env=env, n_episodes=1000, det_policy=random_policy
+    )
     policy = random_policy
     qs_network = Network(
         in_features=env.n_state_features,
         depths=q_network_depths,
         out_features=env.n_actions,
     )
+    qs_network_released_copy = None
     optimizer = torch.optim.Adam(params=qs_network.parameters(), lr=lr)
     criterion = nn.MSELoss()
     epsilon = epsilon_start
@@ -121,12 +126,11 @@ def deep_q_learning(
     losses = []
     for episode in range(n_episodes):
         if verbose_frequency is not None and (episode + 1) % verbose_frequency == 0:
-            with torch.no_grad():
-                win_ratios.append(
-                    play_env_det_policy(env=env, n_episodes=1000, det_policy=policy)
-                )
+            win_ratios.append(
+                play_env_det_policy(env=env, n_episodes=1000, det_policy=policy)
+            )
             print(
-                f"Episode {episode + 1}: trace length: {len(sars_traces_current)}, "
+                f"Training: Episode {episode + 1}: trace length: {len(sars_traces_current)}, "
                 + f"win ratio= {round(win_ratios[-1], 2)} %, epsilon = {epsilon}"
             )
         env.reset()
@@ -168,12 +172,50 @@ def deep_q_learning(
                         print(f"epoch = {epoch + 1}, loss = {losses[-1]}")
                 training_batches = training_batches[-max_n_batches:]
 
-                def policy(s):
+                def new_deep_policy(s):
                     if np.random.randn() < epsilon:
                         return random_policy(s)
                     with torch.no_grad():
                         s_torch = torch.tensor([s / 5.0]).reshape(-1, 1)
                         return qs_network(s_torch).max(-1)[1].item()
+
+                new_policy_wins = play_env_det_policy(
+                    env=env, n_episodes=1000, det_policy=new_deep_policy
+                )
+                print(
+                    f"Testing: new_policy_wins {round(new_policy_wins, 2)} %"
+                    + f", current_policy_wins: {round(current_policy_wins, 2)} %"
+                    + f", epsilon = {epsilon}"
+                )
+                if new_policy_wins > current_policy_wins:
+                    current_policy_wins = new_policy_wins
+                    if qs_network_released_copy is None:
+                        qs_network_released_copy = Network(
+                            in_features=env.n_state_features,
+                            depths=q_network_depths,
+                            out_features=env.n_actions,
+                        )
+                    original_state_dict = qs_network.state_dict()
+                    copied_state_dict = copy.deepcopy(original_state_dict)
+                    if qs_network_released_copy is None:
+                        qs_network_released_copy = Network(
+                            in_features=env.n_state_features,
+                            depths=q_network_depths,
+                            out_features=env.n_actions,
+                        )
+                    qs_network_released_copy.load_state_dict(copied_state_dict)
+
+                    def deep_policy(s):
+                        if np.random.randn() < epsilon:
+                            return random_policy(s)
+                        with torch.no_grad():
+                            s_torch = torch.tensor([s / 5.0]).reshape(-1, 1)
+                            return qs_network_released_copy(s_torch).max(-1)[1].item()
+
+                    policy = deep_policy
+                    print(f" => policy updated")
+                else:
+                    print(f" => policy not updated")
 
         epsilon *= epsilon_decay
     return policy, win_ratios, losses
