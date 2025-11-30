@@ -22,6 +22,7 @@ def play_episodes() -> None:
         verbose_frequency=report_freq,
         q_network_depths=[64, 128, 64],
         n_epochs=1000,
+        max_n_batches=10,
         batch_size=1000,
         lr=1.0e-5,
     )
@@ -35,11 +36,13 @@ def play_episodes() -> None:
         "Random Jumps, deep Q-learning: "
         + f" , Final win% = {round(win_ratios[-1], 1)} %"
     )
+    ax[0].grid(True)
     ax[0].set_title(title)
     ax[1].plot(losses)
     ax[1].set_yscale("log")
     ax[1].set_xlabel("Epochs")
     ax[1].set_ylabel("Loss")
+    ax[1].grid(True)
     this_dir = Path(__file__).parent.resolve()
     fig_file_name = f"images/TD.Fig{6}.png"
     plt.tight_layout()

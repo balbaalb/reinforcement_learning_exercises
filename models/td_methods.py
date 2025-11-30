@@ -102,6 +102,7 @@ def deep_q_learning(
     q_network_depths: list[int] = [256, 256],
     n_epochs: int = 10,
     batch_size=1000,
+    max_n_batches=10,
     lr: float = 0.001,
 ) -> DeterminisiticPolicyType:
     random_policy = lambda s: np.random.choice(np.arange(env.n_actions))
@@ -165,6 +166,7 @@ def deep_q_learning(
                     losses.append(loss.item())
                     if (epoch + 1) % (n_epochs // 10) == 0:
                         print(f"epoch = {epoch + 1}, loss = {losses[-1]}")
+                training_batches = training_batches[-max_n_batches:]
 
                 def policy(s):
                     if np.random.randn() < epsilon:
