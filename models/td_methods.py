@@ -115,7 +115,9 @@ def deep_q_learning(
     criterion = nn.MSELoss()
     epsilon = epsilon_start
     win_ratios = []
-    sars_traces = []
+    sars_traces_current = []
+    training_batches = []
+    losses = []
     for episode in range(n_episodes):
         if verbose_frequency is not None and (episode + 1) % verbose_frequency == 0:
             with torch.no_grad():
@@ -123,7 +125,7 @@ def deep_q_learning(
                     play_env_det_policy(env=env, n_episodes=1000, det_policy=policy)
                 )
             print(
-                f"Episode {episode + 1}: trace length: {len(sars_traces)}, "
+                f"Episode {episode + 1}: trace length: {len(sars_traces_current)}, "
                 + f"win ratio= {round(win_ratios[-1], 2)} %, epsilon = {epsilon}"
             )
         env.reset()
@@ -134,32 +136,35 @@ def deep_q_learning(
             s1 = env.state
             r = env.reward
             done = 1 if env.done else 0
-            sars_traces.append([s0, a0, r, s1, done])
-            if len(sars_traces) >= batch_size:
-                np_sars_traces = np.array(sars_traces)
-                s0_scaled = np_sars_traces[:, 0].reshape(-1, 1) / 5.0
-                a0 = np_sars_traces[:, 1].astype(int)
-                r = np_sars_traces[:, 2].reshape(-1, 1)
-                s1_scaled = np_sars_traces[:, 3].reshape(-1, 1) / 5.0
-                d_coeff = (np_sars_traces[:, 4] - 1.0).reshape(-1, 1)
-
-                s0_torch = torch.FloatTensor(s0_scaled)
-                s1_torch = torch.FloatTensor(s1_scaled)
-                r_torch = torch.FloatTensor(r)
-                d_coeff_torch = torch.FloatTensor(d_coeff)
-                a0_torch = torch.tensor(a0, dtype=torch.int64).reshape(-1, 1)
+            sars_traces_current.append([s0, a0, r, s1, done])
+            if len(sars_traces_current) >= batch_size:
+                training_batches.append(sars_traces_current)
+                sars_traces_current = []
                 for epoch in range(n_epochs):
-                    qs0_torch = qs_network(s0_torch)
-                    q0_torch = torch.gather(qs0_torch, 1, a0_torch)
-                    qs1_torch = qs_network(s1_torch)
-                    q1_torch = qs1_torch.max(-1)[0]
-                    g = q1_torch * d_coeff_torch * gamma + r_torch
-                    optimizer.zero_grad()
-                    loss = criterion(g, q0_torch)
-                    loss.backward()
-                    optimizer.step()
-                print(f"epoch = {epoch + 1}, loss = {loss.item()}")
-                sars_traces = []
+                    for sars_traces in training_batches:
+                        np_sars_traces = np.array(sars_traces)
+                        s0_scaled = np_sars_traces[:, 0].reshape(-1, 1) / 5.0
+                        a0 = np_sars_traces[:, 1].astype(int)
+                        r = np_sars_traces[:, 2].reshape(-1, 1)
+                        s1_scaled = np_sars_traces[:, 3].reshape(-1, 1) / 5.0
+                        d_coeff = (np_sars_traces[:, 4] - 1.0).reshape(-1, 1)
+                        s0_torch = torch.FloatTensor(s0_scaled)
+                        s1_torch = torch.FloatTensor(s1_scaled)
+                        r_torch = torch.FloatTensor(r)
+                        d_coeff_torch = torch.FloatTensor(d_coeff)
+                        a0_torch = torch.tensor(a0, dtype=torch.int64).reshape(-1, 1)
+                        qs0_torch = qs_network(s0_torch)
+                        q0_torch = torch.gather(qs0_torch, 1, a0_torch)
+                        qs1_torch = qs_network(s1_torch)
+                        q1_torch = qs1_torch.max(-1)[0].reshape(-1, 1)
+                        g = q1_torch * d_coeff_torch * gamma + r_torch
+                        optimizer.zero_grad()
+                        loss = criterion(g, q0_torch)
+                        loss.backward()
+                        optimizer.step()
+                    losses.append(loss.item())
+                    if (epoch + 1) % (n_epochs // 10) == 0:
+                        print(f"epoch = {epoch + 1}, loss = {losses[-1]}")
 
                 def policy(s):
                     if np.random.randn() < epsilon:
@@ -169,4 +174,4 @@ def deep_q_learning(
                         return qs_network(s_torch).max(-1)[1].item()
 
         epsilon *= epsilon_decay
-    return policy, win_ratios
+    return policy, win_ratios, losses
