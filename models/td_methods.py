@@ -152,12 +152,9 @@ def deep_q_learning(
                     qs0_torch = qs_network(s0_torch)
                     q0_torch = torch.gather(qs0_torch, 1, a0_torch)
                     qs1_torch = qs_network(s1_torch)
-                    a1 = qs1_torch.max(-1)[1]
-                    q1_torch = qs1_torch[a1]
+                    q1_torch = qs1_torch.max(-1)[0]
                     g = q1_torch * d_coeff_torch * gamma + r_torch
-                    # print(f"shapes: {s0_torch.shape} , {qs0_torch.shape}, {a0.shape}, {q0_torch.shape}")
                     optimizer.zero_grad()
-                    # print(f"g.shape = {g.shape}, q0.shape = {q0_torch.shape}")
                     loss = criterion(g, q0_torch)
                     loss.backward()
                     optimizer.step()
