@@ -147,9 +147,10 @@ def deep_q_learning(
                 s1_torch = torch.FloatTensor(s1_scaled)
                 r_torch = torch.FloatTensor(r)
                 d_coeff_torch = torch.FloatTensor(d_coeff)
+                a0_torch = torch.tensor(a0, dtype=torch.int64).reshape(-1, 1)
                 for epoch in range(n_epochs):
                     qs0_torch = qs_network(s0_torch)
-                    q0_torch = qs0_torch[a0]
+                    q0_torch = torch.gather(qs0_torch, 1, a0_torch)
                     qs1_torch = qs_network(s1_torch)
                     a1 = qs1_torch.max(-1)[1]
                     q1_torch = qs1_torch[a1]
