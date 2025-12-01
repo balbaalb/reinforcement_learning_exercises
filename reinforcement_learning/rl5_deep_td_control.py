@@ -10,7 +10,7 @@ def play_episodes() -> None:
     torch.manual_seed(123)
     slip = 0
     env = RandomJumps(slip=slip)
-    report_freq = 10
+    report_freq = 1
     n_episodes = 10000
     t0 = time.time()
     _, win_ratios, losses = deep_q_learning(
@@ -20,11 +20,11 @@ def play_episodes() -> None:
         epsilon_start=1.0,
         epsilon_decay=0.999,
         verbose_frequency=report_freq,
-        q_network_depths=[64, 128, 64],
-        n_epochs=1000,
-        max_n_batches=10,
-        batch_size=1000,
-        lr=1.0e-5,
+        q_network_depths=[512, 512],
+        n_epochs=10,
+        max_n_batches=1,
+        batch_size=1,
+        lr=0.0001,
     )
     t1 = time.time()
     print(f"Training time ={t1 - t0} s = {round((t1 - t0) / 3600, 1)} hr")

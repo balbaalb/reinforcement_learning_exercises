@@ -168,8 +168,8 @@ def deep_q_learning(
                         loss.backward()
                         optimizer.step()
                     losses.append(loss.item())
-                    if (epoch + 1) % (n_epochs // 10) == 0:
-                        print(f"epoch = {epoch + 1}, loss = {losses[-1]}")
+                    # if (epoch + 1) % (n_epochs // 10) == 0:
+                    #     print(f"epoch = {epoch + 1}, loss = {losses[-1]}")
                 training_batches = training_batches[-max_n_batches:]
 
                 def new_deep_policy(s):
@@ -182,11 +182,11 @@ def deep_q_learning(
                 new_policy_wins = play_env_det_policy(
                     env=env, n_episodes=1000, det_policy=new_deep_policy
                 )
-                print(
-                    f"Testing: new_policy_wins {round(new_policy_wins, 2)} %"
-                    + f", current_policy_wins: {round(current_policy_wins, 2)} %"
-                    + f", epsilon = {epsilon}"
-                )
+                # print(
+                #     f"Testing: new_policy_wins {round(new_policy_wins, 2)} %"
+                #     + f", current_policy_wins: {round(current_policy_wins, 2)} %"
+                #     + f", epsilon = {epsilon}"
+                # )
                 if new_policy_wins > current_policy_wins:
                     current_policy_wins = new_policy_wins
                     if qs_network_released_copy is None:
@@ -213,9 +213,10 @@ def deep_q_learning(
                             return qs_network_released_copy(s_torch).max(-1)[1].item()
 
                     policy = deep_policy
-                    print(f" => policy updated")
+                    # print(f" => policy updated")
                 else:
-                    print(f" => policy not updated")
+                    pass
+                    # print(f" => policy not updated")
 
         epsilon *= epsilon_decay
     return policy, win_ratios, losses
