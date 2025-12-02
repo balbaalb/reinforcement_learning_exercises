@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Self
+from enum import Enum, auto
 from environments.environment import Environment
 
 
@@ -19,12 +20,13 @@ class RandomJumps(Environment):
     slip: The probablity of jump direction reversal with the same hump magnitude.
     """
 
-    def __init__(self, slip: float = 0) -> None:
+    class MODE(Enum):
+        CONTINOUS = auto()
+        DISCRETE = auto()
+
+    def __init__(self, slip: float = 0, mode: MODE = MODE.CONTINOUS) -> None:
         super().__init__()
-        self.state = 0
-        self.reward = 0
-        self.gain = 0
-        self.n_states = None
+        self.n_states = 101
         self.n_actions = 4
         self.step_number = 0
         self.max_steps = 1000
@@ -33,13 +35,17 @@ class RandomJumps(Environment):
         self.n_state_features = 1  # position x
         self.n_action_features = None
         self.slip = slip
+        self.mode = mode
+        self.reset()
 
     def reset(self) -> None:
-        self.state = 0
+        self.x = 0
         self.reward = 0
         self.gain = 0
         self.step_number = 0
         self.done = False
+        self.ind = int((self.x + 5.0) * 10)
+        self.state = self.x if self.mode == self.MODE.CONTINOUS else self.ind
 
     def step(self, action: int) -> Self:
         if self.done:
@@ -58,15 +64,17 @@ class RandomJumps(Environment):
                 dx = -1.0
         f = np.random.rand()
         dx *= -1 if f < self.slip else 1
-        self.state += dx
-        if self.state <= -5.0:
+        self.x += dx
+        if self.x <= -5.0:
             self.done = True
-        if 1.51 <= self.state <= 2.49:
+        if 1.51 <= self.x <= 2.49:
             self.done = True
-        if 2.99 <= self.state <= 3.01:
+        if 2.99 <= self.x <= 3.01:
             self.done = True
             self.reward = 1
             self.gain = 1
-        if 5.0 <= self.state:
+        if 5.0 <= self.x:
             self.done = True
+        self.ind = int((self.x + 5.0) * 10)
+        self.state = self.x if self.mode == self.MODE.CONTINOUS else self.ind
         return self
