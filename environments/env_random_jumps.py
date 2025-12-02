@@ -48,13 +48,13 @@ class RandomJumps(Environment):
         dx = 0
         self.step_number += 1
         match action:
-            case 0:
-                dx = 0.5
-            case 1:
+            case 0:  # walk forward
+                dx = 0.1
+            case 1:  # jump forward
                 dx = 1.0
-            case 2:
-                dx = -0.5
-            case 3:
+            case 2:  # walk backward
+                dx = -0.1
+            case 3:  # jump backward
                 dx = -1.0
         f = np.random.rand()
         dx *= -1 if f < self.slip else 1

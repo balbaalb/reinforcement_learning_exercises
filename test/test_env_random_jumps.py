@@ -10,7 +10,12 @@ def test_RandomJumps():
     assert env.gain == 0
     assert env.state == -5
     env.reset()
-    env.step(1).step(0).step(1).step(0)
+    env.step(1)
+    for _ in range(5):
+        env.step(0)
+    env.step(1)
+    for _ in range(5):
+        env.step(0)
     assert env.done
     assert env.reward == 1
     assert env.gain == 1
