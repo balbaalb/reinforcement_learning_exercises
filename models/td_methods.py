@@ -63,7 +63,7 @@ def td_control(
             )
         alpha *= alpha_decay
         epsilon *= epsilon_decay
-    return policy, win_ratios
+    return policy, win_ratios, q
 
 
 class Network(nn.Sequential):

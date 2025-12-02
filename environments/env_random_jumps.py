@@ -67,6 +67,7 @@ class RandomJumps(Environment):
         self.x += dx
         if self.x <= -5.0:
             self.done = True
+            self.x = -5.0
         if 1.51 <= self.x <= 2.49:
             self.done = True
         if 2.99 <= self.x <= 3.01:
@@ -75,6 +76,7 @@ class RandomJumps(Environment):
             self.gain = 1
         if 5.0 <= self.x:
             self.done = True
+            self.x = 5.0
         self.ind = int((self.x + 5.0) * 10)
         self.state = self.x if self.mode == self.MODE.CONTINOUS else self.ind
         return self
