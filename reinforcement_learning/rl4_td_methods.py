@@ -10,7 +10,9 @@ Episode 10000: win ratio = 50.8 %
 """
 
 
-def play_episodes(on_policy: bool, fig_number: int, lambda_td: float = 0) -> None:
+def play_slippery_frozen_lake(
+    on_policy: bool, fig_number: int, lambda_td: float = 0
+) -> None:
     np.random.seed(45)
     slip = 0.33
     size = 4
@@ -49,11 +51,11 @@ def play_episodes(on_policy: bool, fig_number: int, lambda_td: float = 0) -> Non
 
 
 def main():
-    play_episodes(on_policy=True, fig_number=1)
-    play_episodes(on_policy=False, fig_number=2)
-    play_episodes(on_policy=True, fig_number=3, lambda_td=0.5)
-    play_episodes(on_policy=False, fig_number=4, lambda_td=0.1)
-    play_episodes(on_policy=False, fig_number=5, lambda_td=0.4)
+    play_slippery_frozen_lake(on_policy=True, fig_number=1)
+    play_slippery_frozen_lake(on_policy=False, fig_number=2)
+    play_slippery_frozen_lake(on_policy=True, fig_number=3, lambda_td=0.5)
+    play_slippery_frozen_lake(on_policy=False, fig_number=4, lambda_td=0.1)
+    play_slippery_frozen_lake(on_policy=False, fig_number=5, lambda_td=0.4)
 
 
 if __name__ == "__main__":
