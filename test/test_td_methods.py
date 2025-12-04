@@ -8,7 +8,7 @@ def test_td_control_1():
     """
     np.random.seed(123)
     env = RandomWalk(n_states=5, start_state=2, slip=0.4)
-    optimal_policy, _ = td_control(
+    optimal_policy, _, _ = td_control(
         env=env,
         n_episodes=100,
         gamma=0.99,
@@ -28,7 +28,7 @@ def test_td_control_2():
     """
     np.random.seed(123)
     env = RandomWalk(n_states=5, start_state=2, slip=0.4)
-    optimal_policy, _ = td_control(
+    optimal_policy, _, _ = td_control(
         env=env,
         n_episodes=300,
         gamma=0.99,
@@ -48,7 +48,7 @@ def test_td_control_3():
     """
     np.random.seed(123)
     env = RandomWalk(n_states=5, start_state=2, slip=0.4)
-    optimal_policy, _ = td_control(
+    optimal_policy, _, _ = td_control(
         env=env,
         n_episodes=1000,
         gamma=0.9,
@@ -69,7 +69,7 @@ def test_td_control_4():
     """
     np.random.seed(123)
     env = RandomWalk(n_states=5, start_state=2, slip=0.4)
-    optimal_policy, _ = td_control(
+    optimal_policy, _, _ = td_control(
         env=env,
         n_episodes=100,
         gamma=0.99,

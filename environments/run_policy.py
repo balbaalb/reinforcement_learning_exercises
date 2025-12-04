@@ -1,12 +1,23 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from typing import Callable
 from environments.environment import Environment
 
 PolicyType = Callable[[int, int], int]
+PolicyType_Continous = Callable[[npt.ArrayLike, int], int]
+DeterminisiticPolicyType = Callable[[float], int]
 
 
-def run_policy(policy: PolicyType, state: int, n_actions: int) -> int:
+def run_policy(
+    policy: PolicyType | PolicyType_Continous,
+    state: int | npt.ArrayLike,
+    n_actions: int,
+) -> int:
+    """
+    Runs a deterministic or undeterministic policy.
+    State can be state index or array of state features.
+    """
     cdfs = [0]
     cdf = 0
     for action in range(n_actions - 1):
@@ -16,12 +27,28 @@ def run_policy(policy: PolicyType, state: int, n_actions: int) -> int:
     return np.searchsorted(cdfs, x) - 1
 
 
-def play_env(env: Environment, n_episodes: int, policy: PolicyType):
+def play_env(
+    env: Environment, n_episodes: int, policy: PolicyType | PolicyType_Continous
+):
     total_rewards = 0
     for _ in range(n_episodes):
         env.reset()
         while not env.done and env.step_number < env.max_steps:
             a = run_policy(policy, state=env.state, n_actions=env.n_actions)
+            env.step(a)
+            total_rewards += env.reward
+    win_percent = total_rewards / n_episodes * 100
+    return win_percent
+
+
+def play_env_det_policy(
+    env: Environment, n_episodes: int, det_policy: DeterminisiticPolicyType
+):
+    total_rewards = 0
+    for _ in range(n_episodes):
+        env.reset()
+        while not env.done and env.step_number < env.max_steps:
+            a = det_policy(env.state)
             env.step(a)
             total_rewards += env.reward
     win_percent = total_rewards / n_episodes * 100
